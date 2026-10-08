@@ -1,0 +1,4 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Local development FastAPI endpoint only. Production traffic must use HTTPS. -->
+    <application android:usesCleartextTraffic="true" />
+</manifest>

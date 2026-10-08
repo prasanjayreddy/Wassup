@@ -1,0 +1,21 @@
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+*.iml
+.idea/
+captures/
+
+# Python
+backend/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local secrets and OS files
+.env
+.env.*
+!.env.example
+*.keystore
+Thumbs.db
+.DS_Store
