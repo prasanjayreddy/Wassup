@@ -1,0 +1,47 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      REQUIRE_PROTOTYPE_AUTH: "true"
+      INFERENCE_BASE_URL: http://inference:8000/v1
+      INFERENCE_MODEL_ID: ${INFERENCE_MODEL_ID:-Qwen/Qwen2.5-7B-Instruct}
+      INFERENCE_MODEL_REVISION: ${INFERENCE_MODEL_REVISION:-a09a35458c702b33eeacc393d103063234e8bc28}
+      INFERENCE_TIMEOUT_SECONDS: ${INFERENCE_TIMEOUT_SECONDS:-30}
+      INFERENCE_MAX_CONCURRENCY: ${INFERENCE_MAX_CONCURRENCY:-4}
+      AI_MAX_CONTEXT_CHARS: ${AI_MAX_CONTEXT_CHARS:-6000}
+      AI_MAX_GENERATED_TOKENS: ${AI_MAX_GENERATED_TOKENS:-160}
+      AI_RATE_LIMIT_PER_MINUTE: ${AI_RATE_LIMIT_PER_MINUTE:-20}
+      INFERENCE_AUTH_TOKEN: ${INFERENCE_AUTH_TOKEN:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      inference:
+        condition: service_started
+
+  # This service is intentionally not published to the host network.
+  inference:
+    image: ${VLLM_IMAGE:-vllm/vllm-openai:v0.6.6.post1}
+    profiles: ["gpu"]
+    command:
+      - ${INFERENCE_MODEL_ID:-Qwen/Qwen2.5-7B-Instruct}
+      - --revision
+      - ${INFERENCE_MODEL_REVISION:-a09a35458c702b33eeacc393d103063234e8bc28}
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --max-model-len
+      - ${VLLM_MAX_MODEL_LEN:-8192}
+      - --gpu-memory-utilization
+      - ${VLLM_GPU_MEMORY_UTILIZATION:-0.90}
+      - --api-key
+      - ${INFERENCE_AUTH_TOKEN:?Set INFERENCE_AUTH_TOKEN in your uncommitted .env file}
+    environment:
+      HF_HOME: /models/huggingface
+    volumes:
+      - model-cache:/models/huggingface
+    gpus: all
+    shm_size: "8gb"
+
+volumes:
+  model-cache:

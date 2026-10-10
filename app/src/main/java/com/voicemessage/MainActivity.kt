@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.voicemessage.ai.LocalAiAssistant
+import com.voicemessage.ai.PrivateBackendAiAssistant
 import com.voicemessage.data.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
@@ -49,7 +49,7 @@ private val Surface = Color(0xFFFAFAFC)
 
 class ChatViewModel : ViewModel() {
     private val repo = LocalMessagingRepository()
-    private val ai = LocalAiAssistant()
+    private val ai = PrivateBackendAiAssistant()
     val conversations: StateFlow<List<Conversation>> = repo.conversations
     val messages: StateFlow<List<Message>> = repo.messages
     fun send(id: String, text: String, scope: kotlinx.coroutines.CoroutineScope) {
@@ -61,10 +61,10 @@ class ChatViewModel : ViewModel() {
             if (conversation.relationship == RelationshipType.CLOSE_FRIEND) repo.receive(id, conversation.participantId, "nicee, see you then 🤝")
         }
     }
-    suspend fun suggestions(context: AiRequestContext) = ai.reply(context)
-    suspend fun rewrite(context: AiRequestContext) = ai.rewrite(context)
-    suspend fun tone(context: AiRequestContext) = ai.changeTone(context)
-    suspend fun translate(context: AiRequestContext) = ai.translate(context)
+    suspend fun suggestions(context: AiRequestContext) = runCatching { ai.reply(context) }.getOrDefault(emptyList())
+    suspend fun rewrite(context: AiRequestContext) = runCatching { ai.rewrite(context) }.getOrDefault("")
+    suspend fun tone(context: AiRequestContext) = runCatching { ai.changeTone(context) }.getOrDefault("")
+    suspend fun translate(context: AiRequestContext) = runCatching { ai.translate(context) }.getOrDefault("")
 }
 
 class MainActivity : ComponentActivity() {

@@ -1,0 +1,7 @@
+.git/
+.gradle/
+.idea/
+**/__pycache__/
+backend/.venv/
+**/build/
+.env
